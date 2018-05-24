@@ -11,8 +11,9 @@ from parser import Directory, File
 
 
 class HTTPfs(Operations):
-    def __init__(self, root, verify_ssl=True):
+    def __init__(self, root, x_api_key, verify_ssl=True):
         self.root = root
+        self.x_api_key = x_api_key
         self.log = logging.getLogger(__name__)
         self.readdir_cache = {}
         self.attr_cache = {}
@@ -20,7 +21,8 @@ class HTTPfs(Operations):
 
         # append headers
         s = requests.Session()
-        s.headers.update({'X-API-Key': 'fxss5G7NxD472koixm7r', 'Accept': 'application/json'})
+        s.headers.update({'X-API-Key': x_api_key, 'Accept': 'application/json'})
+        # s.headers.update({'X-API-Key': 'fxss5G7NxD472koixm7r', 'Accept': 'application/json'})
 
         self.session = s
         if not verify_ssl:
@@ -85,12 +87,13 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument("http_resource", help="Target web directory index")
     p.add_argument("mountpoint", help="Target directory")
+    p.add_argument("x-api-key", help="Alveo API key")
+
     p.add_argument("--foreground", action="store_true", help="Do not fork into background")
     p.add_argument("--debug", action="store_true", help="Enable debug logging")
     p.add_argument("--nothreads", action="store_true", help="Disable fuse threads")
     p.add_argument("--no_ssl_verify", action="store_true", help="Disable SSL Verification")
-    p.add_argument("--allow_other", action="store_true", help="Allow users other than the one running the command "
-                                                              "to access the directory.")
+    p.add_argument("--allow_other", action="store_true", help="Allow users other than the one running the command ")
 
     p.add_argument("-o", "--options", type=str, default="", help="Mount-style variant of the above options "
                                                                  "(e.g. -o debug,allow_other")
@@ -99,6 +102,7 @@ if __name__ == '__main__':
 
     fsroot = six.text_type(args.pop("http_resource").strip("/"))
     mountpoint = args.pop("mountpoint")
+    x_api_key = args.pop("x-api-key")
 
     fuse_kwargs = {
         'nothreads': True if args.pop("nothreads") else False,
@@ -119,4 +123,4 @@ if __name__ == '__main__':
     if fuse_kwargs['debug']:
         logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
-    FUSE(HTTPfs(fsroot, verify_ssl=False if args.pop("no_ssl_verify") else True), mountpoint, **fuse_kwargs)
+    FUSE(HTTPfs(fsroot, x_api_key, verify_ssl=False if args.pop("no_ssl_verify") else True), mountpoint, **fuse_kwargs)

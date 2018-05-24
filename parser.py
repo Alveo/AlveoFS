@@ -46,12 +46,10 @@ class Directory:
         # Do a request and parse JSON
         response = json.loads((self.session.get(u"{}/{}/".format(self.root, self.path))).text)
 
-        if 'directories' in response:
-            directory_arr = response['directories']
-            for d in directory_arr:
-                name = d.split('/')[-1]
-                is_dir = True
-                contents.append((name, is_dir))
+        for d in self.retrieve_directories(response):
+            name = d.split('/')[-1]
+            is_dir = True
+            contents.append((name, is_dir))
 
         if 'files' in response:
             file_arr = response['files']
@@ -61,6 +59,32 @@ class Directory:
                 contents.append((name, is_dir))
 
         return contents
+
+    def retrieve_directories(self, json):
+        """
+        Alveo API response contains entries(collections/items/documents) which can be treated as
+        directories.
+
+        * 'document_directory' if not empty, contains only one directory - 'document'
+        :param self:
+        :param json: json contains alveo API response
+        :return: string array as directories
+        """
+        directory_arr = []
+
+        if 'collections' in json:
+            directory_arr = json['collections']
+
+        if 'items' in json:
+            directory_arr = json['items']
+
+        if 'documents' in json:
+            directory_arr = json['documents']
+
+        if 'document_directory' in json:
+            directory_arr = json['document_directory']
+
+        return directory_arr
 
 
 class File:
