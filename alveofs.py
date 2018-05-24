@@ -10,7 +10,7 @@ from fuse import FUSE, Operations, FuseOSError, ENOENT
 from parser import Directory, File
 
 
-class HTTPfs(Operations):
+class AlveoFS(Operations):
     def __init__(self, root, x_api_key, verify_ssl=True):
         self.root = root
         self.x_api_key = x_api_key
@@ -123,4 +123,4 @@ if __name__ == '__main__':
     if fuse_kwargs['debug']:
         logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
-    FUSE(HTTPfs(fsroot, x_api_key, verify_ssl=False if args.pop("no_ssl_verify") else True), mountpoint, **fuse_kwargs)
+    FUSE(AlveoFS(fsroot, x_api_key, verify_ssl=False if args.pop("no_ssl_verify") else True), mountpoint, **fuse_kwargs)

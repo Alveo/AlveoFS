@@ -44,8 +44,8 @@ git clone git@github.com:Alveo/AlveoFS.git
 # Change into directory 
 cd AlveoFS
 
-# Make a symbolic link to /usr/sbin/
-sudo ln -s `pwd`/alveofs.py /usr/sbin/mount.alveofs
+# Make a symbolic link to /usr/local/bin
+sudo ln -s `pwd`/alveofs.py /usr/local/bin/mount.alveofs
 ```
 
 You should now be able to use the filesystem in the following ways:
@@ -54,5 +54,5 @@ You should now be able to use the filesystem in the following ways:
 sudo mount.alveofs http://some.server/ /mnt/mountpoint <X-API-KEY> --debug --allow_other
 
 # Or using the normal mount command
-sudo mount -t alveofs http://some.server/ /mnt/mountpoint --debug --allow_other
+sudo mount -t alveofs http://some.server/ /mnt/mountpoint <X-API-KEY> --debug --allow_other
 ```

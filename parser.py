@@ -26,23 +26,6 @@ class Directory:
         """
         contents = [(".", True), ("..", True)]
 
-        # # Do a request, and run it through an HTML parser.
-        # response = self.session.get(u"{}/{}/".format(self.root, self.path))
-        # parsed = BeautifulSoup(response.text, 'html.parser')
-        #
-        # # Find all of the entity elements, remove the cruft
-        # for x in parsed.find_all("tr"):
-        #     # if x.td is not None and x.td.img['alt'] != "[PARENTDIR]":
-        #     #     is_dir = x.td.img['alt'] == "[DIR]"
-        #     #     contents.append((x.find_all('td')[1].a.string.strip("/"), is_dir))
-        #     tds = x.find_all('td')
-        #     if len(tds) > 0:
-        #         name = tds[1].a.string
-        #         is_dir = name.endswith('/')
-        #         contents.append((name.strip("/"), is_dir))
-        #
-        # return contents
-
         # Do a request and parse JSON
         response = json.loads((self.session.get(u"{}/{}/".format(self.root, self.path))).text)
 
@@ -88,7 +71,7 @@ class Directory:
 
 
 class File:
-    def __init__(self, root, path, httpfs, session):
+    def __init__(self, root, path, alveofs, session):
         self.root = root
         self.path = path
         self.session = session
@@ -97,7 +80,7 @@ class File:
         self.readbuffer = defaultdict(lambda: None)
         self.is_filtered = False
 
-        print "----- Loading file root[{}], path[{}]".format(root, path)
+        # print "----- Loading file root[{}], path[{}]".format(root, path)
 
         # filter file
         if self.filter_path():
@@ -110,10 +93,10 @@ class File:
         # Determine if this is a directory
         parent_dir = "/".join(self.path.split("/")[:-1])
         filename = self.path.split("/")[-1]
-        if parent_dir not in httpfs.readdir_cache.keys():
-            httpfs.readdir_cache[parent_dir] = Directory(self.root, parent_dir, self.session).contents()
+        if parent_dir not in alveofs.readdir_cache.keys():
+            alveofs.readdir_cache[parent_dir] = Directory(self.root, parent_dir, self.session).contents()
 
-        dirs = [six.text_type(x[0]) for x in httpfs.readdir_cache[parent_dir] if x[1]]
+        dirs = [six.text_type(x[0]) for x in alveofs.readdir_cache[parent_dir] if x[1]]
         self.is_dir = (six.text_type(filename) in dirs) or six.text_type(filename) == six.text_type("")
 
         # Determine file size
@@ -184,7 +167,7 @@ class File:
 
     def attributes(self):
         self.log.debug(u"[ATTR] Attributes of file {}/{}".format(self.root, self.path))
-        print "=====Attributes of file root[{}], path[{}], is_filtered[{}]".format(self.root, self.path, self.is_filtered)
+        # print "=====Attributes of file root[{}], path[{}], is_filtered[{}]".format(self.root, self.path, self.is_filtered)
 
         if not self.is_filtered and self.r.status_code != 200:
             raise FuseOSError(ENOENT)
@@ -216,6 +199,6 @@ class File:
             if name.startswith(w):
                 rlt = True
 
-        print "=====filter_path: root[{}], path[{}], name[{}], rlt[{}]".format(self.root, self.path, name, rlt)
+        # print "=====filter_path: root[{}], path[{}], name[{}], rlt[{}]".format(self.root, self.path, name, rlt)
 
         return rlt
